@@ -1,68 +1,72 @@
-import './api_call.dart';
 import 'package:flutter/material.dart';
+import './api_controller.dart';
+import './dart_json_class.dart';
 
 
 void main() {
-  runApp(
-  const  HomeApp(),
+  runApp( MyApp(),
     );
   }
 
-  class HomeApp extends StatefulWidget {
-    const HomeApp({ Key? key }) : super(key: key);
-
-  @override
-  State<HomeApp> createState() => _HomeAppState();
-}
-
-class _HomeAppState extends State<HomeApp> {
-   late Future<Users> users;
-
-   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    users = getUsers();
-  }
-
-
+class MyApp extends StatelessWidget{
     @override
     Widget build(BuildContext context) {
       return MaterialApp(
         title: 'Flutter Demo',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.red,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
-        ),
-       home: Scaffold(
-         appBar: AppBar(
-           title: Text('Api calls in flutter'),
-           centerTitle: true,
-         ),
-     body: Center(
-       child: FutureBuilder<Users>(
-         future: users,
-         builder: (context, snapshot) {
-          if(snapshot.hasData) {
-          return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        Text(snapshot.data!.name),
-        Text(snapshot.data!.email),
-        Text(snapshot.data!.username),
-      ],
-       );
-      }else if (snapshot.hasData) {
-        return Text(snapshot.error.toString());
-      }else{
-        return  CircularProgressIndicator();
-          }
-         }
-        ),
-      ),
-     ),
-    );
+        theme: ThemeData.dark(),
+       home: const MyHomePage(),
+         );
   }
 }
+
+  class MyHomePage extends StatefulWidget {
+   const MyHomePage({ Key? key }) : super(key: key);
+ 
+   @override
+   State<MyHomePage> createState() => _MyHomePageState();
+ }
+ 
+ class _MyHomePageState extends State<MyHomePage> {
+   @override
+   Widget build(BuildContext context) {
+     return Scaffold(
+       appBar: AppBar(
+         title: const Text('Complex Json Request')
+       ),
+      body: FutureBuilder<List<Users>>(
+        future: ApiProvider().getUsers(),
+        builder: (context, snapshot) {
+       final data = snapshot.data;
+       if (snapshot.hasData) {
+      return ListView.builder(
+        itemCount: data!.length,
+        itemBuilder: (context, index) {
+          final userData = data[index];
+          final name = userData.name;
+          final firstName = name.substring(0, 2);
+          return ListTile(
+            onTap: () {
+              print(userData.address);
+            },
+            leading: CircleAvatar(
+            backgroundColor: Colors.yellow,
+              radius: 30,
+              child: Text(firstName,
+            style: const TextStyle(color: Colors.black),
+              ),
+            ),
+            title: Text(userData.name),
+            subtitle: Text(userData.email),
+             );
+            }
+          );
+            } else {
+            return const Center(child: CircularProgressIndicator(),
+            );
+          }
+         }
+       ),
+     );
+   }
+ }
